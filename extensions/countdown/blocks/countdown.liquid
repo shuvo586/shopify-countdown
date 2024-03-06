@@ -1,0 +1,217 @@
+<style>
+    {{ block.settings.font_select | font_face }}
+    #countdown-timer {
+        justify-content: {{ block.settings.counter_alignment }};
+    }
+    #countdown-timer .count__wrap{
+        font-family: {{ block.settings.font_select.family }};
+        color: {{ block.settings.color }};
+        background: {{ block.settings.background }};
+        border-radius: {{ block.settings.border_radius }}px;
+    }
+</style>
+
+<div id="countdown-timer">
+    <div class="count__wrap {% if block.settings.view_mode == 'large' %}large_view{% else %}compact_view{% endif %}">
+        {% if block.settings.enable_days %}
+            <div class="count__single">
+                <span id="days" class="count__number"></span>
+
+                {% if block.settings.view_mode == 'large' %}
+                    <span class="count__unit">days</span>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if block.settings.enable_hours %}
+            <div class="count__single">
+                <span id="hours" class="count__number"></span>
+
+                {% if block.settings.view_mode == 'large' %}
+                    <span class="count__unit">hours</span>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if block.settings.enable_minutes %}
+            <div class="count__single">
+                <span id="minutes" class="count__number"></span>
+
+                {% if block.settings.view_mode == 'large' %}
+                    <span class="count__unit">minutes</span>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if block.settings.enable_seconds %}
+            <div class="count__single">
+                <span id="seconds" class="count__number"></span>
+
+                {% if block.settings.view_mode == 'large' %}
+                    <span class="count__unit">seconds</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    // Function to update the countdown timer
+    function updateCountdown(endTime) {
+        const currentTime = new Date();
+        const difference = endTime - currentTime;
+
+        let days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        {% if block.settings.enable_days %}
+        document.getElementById('days').innerText = days;
+        {% else %}
+        // Convert remaining days to hours if needed
+        hours += days * 24;
+        {% endif %}
+
+        {% if block.settings.enable_hours %}
+        document.getElementById('hours').innerText = hours;
+        {% else %}
+        // Convert remaining hours to minutes if needed
+        minutes += hours * 60;
+        {% endif %}
+
+        {% if block.settings.enable_minutes %}
+        document.getElementById('minutes').innerText = minutes;
+        {% else %}
+        // Convert remaining minutes to seconds if needed
+        seconds += minutes * 60;
+        {% endif %}
+
+        {% if block.settings.enable_seconds %}
+        document.getElementById('seconds').innerText = seconds;
+        {% endif %}
+
+        // Check if the countdown has ended
+        if (difference <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('countdown-timer').innerHTML = 'Countdown expired!';
+        }
+    }
+
+    // Set the end time for the countdown (example: 1 hour from now)
+    let endTime;
+    {% if block.settings.end_date %}
+    let date = '{{ block.settings.end_date }}';
+    endTime = new Date( date );
+    {% else %}
+    endTime = new Date();
+    endTime.setHours(endTime.getHours() + 1);
+    {% endif %}
+
+    // Update the countdown every second
+    const timerInterval = setInterval(() => {
+        updateCountdown(endTime);
+    }, 1000);
+</script>
+
+{% schema %}
+{
+  "name": "Count Down",
+  "target": "section",
+  "stylesheet": "app.css",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Settings"
+    },
+    {
+      "type": "text",
+      "id": "end_date",
+      "label": "End Date",
+      "default": "2024-10-12"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add End date for countdown timer. (Format: 'YYYY-MM-DD' )"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_days",
+      "label": "Show Days",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hours",
+      "label": "Show Hours",
+      "default": true
+    },{
+      "type": "checkbox",
+      "id": "enable_minutes",
+      "label": "Show Minutes",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_seconds",
+      "label": "Show Seconds",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Styles"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_select",
+      "label": "Font Family",
+      "default": "work_sans_n4"
+    },
+    {
+     "label": "Color",
+     "id": "color",
+     "type": "color",
+     "default": "#000000"
+   },
+   {
+     "label": "Background",
+     "id": "background",
+     "type": "color",
+     "default": "#F5F5FE"
+   },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Border Radius",
+      "default": 5
+    },
+    {
+      "type": "text_alignment",
+      "id": "counter_alignment",
+      "label": "Counter Alignment",
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "view_mode",
+      "label": "Countdown Mode",
+      "options": [
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "compact",
+          "label": "Compact"
+        }
+      ],
+      "default": "large"
+    }
+  ]
+}
+{% endschema %}
